@@ -26,7 +26,11 @@ st.markdown("""
     h1 {
         font-family: 'Inter', sans-serif;
         font-weight: 800;
-        color: #ffffff; /* Fallback white */
+        color: #ffffff;
+    }
+    /* Definitive fix to hide Streamlit header anchors */
+    .stApp [data-testid="stHeader"] a, .stApp a.header-anchor {
+        display: none !important;
     }
     .executive-card {
         padding: 20px;
@@ -41,6 +45,11 @@ st.markdown("""
 # Header
 st.title("Talking Rabbitt")
 st.markdown("### **The Executive Intelligence Layer**")
+st.markdown("""
+<p style='font-size: 14px; color: #94a3b8; margin-top: -15px;'>
+Transform raw enterprise data into strategic insights instantly. Upload your data, ask questions in plain English, and receive executive-ready answers and dynamic visualizations.
+</p>
+""", unsafe_allow_html=True)
 
 st.markdown("---")
 
