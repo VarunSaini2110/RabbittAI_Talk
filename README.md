@@ -1,51 +1,46 @@
-# Talking Rabbitt: The Executive Intelligence Layer
+# Talking Rabbitt: The Executive Intelligence Layer 🐇✨
 
 ## The Vision
-Enterprise data is broken. Traditional BI tools like PowerBI and Tableau are built for analysts, not executives. When a COO needs to know *"How did our new Pharma campaign perform in the Midwest vs. East Coast?"*, it becomes a Jira ticket that takes a week.
+Enterprise data is broken. Traditional BI tools like PowerBI and Tableau are built for analysts, not executives. Talking Rabbitt is the conversational intelligence layer that sits *on top* of existing data structures. It reduces Time-To-Insight from 5 days to **5 seconds**.
 
-**Talking Rabbitt** is the conversational intelligence layer that sits *on top* of existing data structures. It reduces Time-To-Insight from 5 days to 5 seconds.
+## The Product
+This repository contains a functional, enterprise-grade MVP built in Python using Streamlit, Pandas, and **Google Gemini 1.5 Pro**.
 
-## The MVP
-This repository contains a functional proof-of-concept (MVP) built in Python using Streamlit, Pandas, and OpenAI's API.
+### The "Magic Moment"
+1. **Upload Data:** Upload the high-density `sample_data/pharma_sales_data.csv` (20 strategic columns, 2,500 rows).
+2. **Executive Snapshot:** Instantly see a high-level KPI dashboard of your data.
+3. **Conversational Query:** Ask complex business questions in plain English.
+4. **Insights & Visuals:** Receive a clear "Bottom Line" answer AND an interactive Plotly dashboard instantly.
 
-It demonstrates the "Magic Moment":
-1. Upload a complex 15-column dataset (`sample_data/pharma_sales_data.csv`).
-2. Ask an unstructured, complex business question.
-3. The system generates a natural-language answer AND an interactive Plotly dashboard instantly directly.
-
-### Architecture
-User Prompt -> Streamlit Chatbox -> OpenAI LLM (Intent Parsing & Python Generation) -> Local Pandas Execution -> Plotly Chart Rendering -> Streamlit UI.
+### Technical Architecture
+- **Engine:** Google Gemini 1.5 Pro (via Vertex AI/AI Studio)
+- **Frontend:** Streamlit with Custom Premium CSS (Glassmorphism aesthetics)
+- **Data:** Pandas (Processing) & Plotly (Dynamic Visualization)
+- **Fallback:** Logic handles both Gemini and OpenAI integration.
 
 ## How to Run Locally
 
-### 1. Prerequisites
-You need Python 3.9+ and pip installed. We highly recommend setting up a virtual environment.
+1. **Install Dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-### 2. Install Dependencies
-```bash
-pip install -r requirements.txt
-```
+2. **Set API Keys:**
+   Create a `.env` file or use Streamlit Secrets:
+   ```env
+   GEMINI_API_KEY=your_google_ai_key
+   ```
 
-### 3. Set your API Key
-You must have an OpenAI API Key. Create a `.env` file in the root directory and add your key:
-```env
-OPENAI_API_KEY=your_key_here
-```
+3. **Launch:**
+   ```bash
+   streamlit run app.py
+   ```
 
-### 4. Run the Application
-```bash
-streamlit run app.py
-```
+## How to Deploy (Streamlit Community Cloud)
 
-### 5. Try the "Magic Moment"
-- Upload the `pharma_sales_data.csv` found in the `sample_data` folder.
-- Type: *"Compare the gross revenue of Pfizer vs Johnson & Johnson drugs in the Summer across all regions."*
+1. Commit this folder to a GitHub repository.
+2. Connect the repo to [share.streamlit.io](https://share.streamlit.io/).
+3. **Important:** Add your `GEMINI_API_KEY` to the **Secrets** management in the app settings.
 
-## How to Deploy (Vercel/Streamlit Community Cloud)
-To deploy this publicly (as required by the PM Challenge):
-
-1. Commit this entire folder to a public GitHub repository.
-2. Go to [share.streamlit.io](https://share.streamlit.io/) and connect your GitHub account.
-3. Select your repository and point the "Main file path" to `app.py`.
-4. **Crucial:** In the Streamlit Cloud advanced settings, paste your `OPENAI_API_KEY` into the Secrets management area.
-5. Click Deploy!
+---
+**Talking Rabbitt** | *Insight at the speed of thought.*
