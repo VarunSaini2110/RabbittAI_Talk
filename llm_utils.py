@@ -23,33 +23,32 @@ def get_client():
             elif "openai_api_key" in st.secrets:
                 api_key = st.secrets["openai_api_key"]
     except Exception as e:
-        print(f"Debug: st.secrets access error: {e}")
+        pass
 
     if not api_key:
-        print("Debug: No API key found in os.environ or st.secrets")
-        return None
+        return None, "No API key found in Environment or Secrets."
         
     # Clean up key if it was pasted with surrounding quotes
-    api_key = str(api_key).strip().strip('"').strip("'")
+    api_key_str = str(api_key).strip().strip('"').strip("'")
     
-    if not api_key.startswith("sk-"):
-        print(f"Debug: Key found but doesn't look like an OpenAI key: {api_key[:5]}...")
-        return None
+    if not api_key_str:
+        return None, "API key is an empty string."
+
+    if not api_key_str.startswith("sk-"):
+        return None, f"Invalid key format. Starts with '{api_key_str[:5]}...' instead of 'sk-'. Length: {len(api_key_str)}"
 
     try:
-        return OpenAI(api_key=api_key)
+        return OpenAI(api_key=api_key_str), "Success"
     except Exception as e:
-        print(f"Debug: Client initialization error: {e}")
-        return None
+        return None, f"OpenAI Initialization Error: {str(e)}"
 
 def generate_python_code(question, df_summary):
     """Uses LLM to write Python code based on the user's question and dataframe schema."""
-    client = get_client()
+    client, debug_msg = get_client()
     if client is None:
-        # Check if we can provide more info
         has_secrets = hasattr(st, "secrets")
         secrets_keys = list(st.secrets.keys()) if has_secrets else "N/A"
-        return f"Error: OpenAI API Key not found or invalid. \nDebug info: st.secrets exists: {has_secrets}, Keys found: {secrets_keys}"
+        return f"Error: {debug_msg} \nDebug: st.secrets exists: {has_secrets}, Keys found: {secrets_keys}"
     
     system_prompt = f"""You are a senior data analyst and Python expert working on "Talking Rabbitt", an executive intelligence layer.
 Your job is to answer the user's question by writing Python code using pandas and, if appropriate, plotly.
