@@ -73,7 +73,7 @@ Instructions:
     
     try:
         response = client.chat.completions.create(
-            model="gpt-4-turbo-preview", # or gpt-3.5-turbo if cost is a concern, but 4 is much better at pandas
+            model="gpt-4o", # gpt-4o is faster and more widely available than preview models
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": question}
