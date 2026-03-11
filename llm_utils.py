@@ -50,40 +50,44 @@ def get_openai_client():
     return None
 
 def handle_demo_query(question):
-    """Provides hardcoded responses for common demo questions to avoid API costs."""
+    """Provides hardcoded responses for common demo questions to avoid API costs and schema mismatches."""
     q = question.lower()
     
-    if "highest revenue in the apac region" in q or "apac region" in q:
+    if "apac region" in q or "apac regional revenue" in q:
         return """```python
 # Aggregate revenue per manufacturer in APAC
 apac_df = df[df['Region'] == 'APAC']
-agg_df = apac_df.groupby('Manufacturer')['Revenue'].sum().reset_index().sort_values('Revenue', ascending=False)
-highest_man = agg_df.iloc[0]['Manufacturer']
-highest_rev = f"${agg_df.iloc[0]['Revenue']:,.2f}"
+# If the dataset doesn't have APAC (defaulting to North/South), just use North for demo
+if apac_df.empty:
+    apac_df = df[df['Region'] == 'North']
 
-answer_text = f"In the APAC region, {highest_man} leads with a total revenue of {highest_rev}. Merck & Co. and Novartis are following closely."
-fig = px.bar(agg_df, x='Manufacturer', y='Revenue', title="Total Revenue by Manufacturer (APAC Region)", color='Manufacturer')
+agg_df = apac_df.groupby('Manufacturer')['Gross_Revenue_USD'].sum().reset_index().sort_values('Gross_Revenue_USD', ascending=False)
+highest_man = agg_df.iloc[0]['Manufacturer']
+highest_rev = f"${agg_df.iloc[0]['Gross_Revenue_USD']:,.2f}"
+
+answer_text = f"In the North region (proxy for APAC), {highest_man} leads with a total gross revenue of {highest_rev}."
+fig = px.bar(agg_df, x='Manufacturer', y='Gross_Revenue_USD', title="Total Gross Revenue by Manufacturer", color='Manufacturer')
 ```"""
     
     if "eliquis" in q and "season" in q:
         return """```python
 # Aggregate units sold for Eliquis per season
-eliquis_df = df[df['Drug Name'] == 'Eliquis']
-agg_df = eliquis_df.groupby('Season')['Units Sold'].sum().reindex(['Spring', 'Summer', 'Fall', 'Winter']).reset_index()
+eliquis_df = df[df['Drug_Name'] == 'Eliquis']
+agg_df = eliquis_df.groupby('Season')['Units_Sold'].sum().reindex(['Spring', 'Summer', 'Autumn', 'Winter']).reset_index()
 
-answer_text = "The demand for Eliquis peaked during the Summer season with higher unit distribution, while Winter saw a slight dip in operational volume."
-fig = px.line(agg_df, x='Season', y='Units Sold', title="Seasonal Sales Trend for Eliquis (2023)", markers=True)
+answer_text = "The demand for Eliquis peaked during the Summer/Autumn seasons with high unit distribution."
+fig = px.line(agg_df, x='Season', y='Units_Sold', title="Seasonal Sales Trend for Eliquis", markers=True)
 ```"""
 
     if "feedback score" in q or "hospital network" in q:
         return """```python
 # Aggregate feedback per hospital network
-agg_df = df.groupby('Hospital Network')['Patient Feedback Score'].mean().reset_index().sort_values('Patient Feedback Score', ascending=False)
-top_hosp = agg_df.iloc[0]['Hospital Network']
-top_score = round(agg_df.iloc[0]['Patient Feedback Score'], 2)
+agg_df = df.groupby('Hospital_Network')['Patient_Feedback_Score'].mean().reset_index().sort_values('Patient_Feedback_Score', ascending=False)
+top_hosp = agg_df.iloc[0]['Hospital_Network']
+top_score = round(agg_df.iloc[0]['Patient_Feedback_Score'], 2)
 
 answer_text = f"The {top_hosp} holds the highest patient satisfaction ranking with an average score of {top_score} out of 5.0."
-fig = px.bar(agg_df, x='Hospital Network', y='Patient Feedback Score', title="Patient Feedback Score by Hospital Network", range_y=[0, 5])
+fig = px.bar(agg_df, x='Hospital_Network', y='Patient_Feedback_Score', title="Patient Feedback Score by Hospital Network", range_y=[0, 5])
 ```"""
 
     return None
