@@ -5,12 +5,50 @@ from llm_utils import generate_python_code, extract_code, execute_generated_code
 from visualization import render_visualization
 
 # App config
-st.set_page_config(page_title="Talking Rabbitt MVP", layout="wide")
+st.set_page_config(page_title="Talking Rabbitt | Executive Intelligence", layout="wide", page_icon="🐇")
+
+# Premium UI Styling
+st.markdown("""
+    <style>
+    .main {
+        background-color: #0e1117;
+    }
+    .stApp {
+        background: radial-gradient(circle at top right, #1e293b, #0f172a);
+    }
+    .stMetric {
+        background: rgba(255, 255, 255, 0.05);
+        padding: 15px;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+    }
+    h1 {
+        font-family: 'Inter', sans-serif;
+        font-weight: 800;
+        background: linear-gradient(90deg, #fff, #94a3b8);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .executive-card {
+        padding: 20px;
+        border-radius: 15px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        margin-bottom: 20px;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
 # Header
-st.title("🐇 Talking Rabbitt")
-st.subheader("Conversational Analytics for Executive Intelligence")
-st.markdown("Upload your enterprise data and talk to it in plain English. No dashboards. No SQL. Just answers.")
+col_header1, col_header2 = st.columns([0.1, 0.9])
+with col_header1:
+    st.write("# 🐇")
+with col_header2:
+    st.title("Talking Rabbitt")
+    st.markdown("### **The Executive Intelligence Layer**")
+
+st.markdown("---")
 
 # Session State
 if 'df' not in st.session_state:
@@ -20,10 +58,20 @@ if 'df_summary' not in st.session_state:
 if 'history' not in st.session_state:
     st.session_state.history = []
 
+# Sidebar Branding
+with st.sidebar:
+    st.image("https://img.icons8.com/isometric/512/rabbit.png", width=100)
+    st.title("Rabbitt AI")
+    st.info("Conversational Data Intelligence for High-Growth Enterprises.")
+    st.divider()
+    if st.session_state.df is not None:
+        st.success("Data Engine Active")
+        st.write(f"Rows: {len(st.session_state.df):,}")
+        st.write(f"Columns: {len(st.session_state.df.columns)}")
+
 # Section 1: File Upload
-st.divider()
 st.header("1. Upload Data")
-uploaded_file = st.file_uploader("Upload a CSV file (Try our sample_data/pharma_sales_data.csv)", type=["csv"])
+uploaded_file = st.file_uploader("Upload a CSV file (e.g., pharma_sales_data.csv)", type=["csv"])
 
 if uploaded_file is not None:
     df = load_data(uploaded_file)
@@ -31,11 +79,45 @@ if uploaded_file is not None:
         st.session_state.df = df
         st.session_state.df_summary = get_dataframe_summary(df)
         
-        st.success("File uploaded successfully!")
-        with st.expander("Preview Data & Detected Columns", expanded=True):
-            st.markdown(f"**Detected {len(df.columns)} Columns:**")
-            st.write(df.columns.tolist())
-            st.dataframe(df.head())
+        # KPI DASHBOARD (Only show when data is loaded)
+        st.markdown("### 📊 Executive Snapshot")
+        kpi1, kpi2, kpi3, kpi4 = st.columns(4)
+        
+        # Intelligent metrics if columns exist
+        with kpi1:
+            rev_col = [c for c in df.columns if 'Revenue' in c]
+            if rev_col:
+                total_rev = df[rev_col[0]].sum()
+                st.metric("Total Revenue", f"${total_rev/1e6:.1f}M")
+            else:
+                st.metric("Total Rows", f"{len(df):,}")
+        
+        with kpi2:
+            profit_col = [c for c in df.columns if 'Profit' in c]
+            if profit_col:
+                total_profit = df[profit_col[0]].sum()
+                st.metric("Total Profit", f"${total_profit/1e6:.1f}M")
+            else:
+                st.metric("Data Columns", len(df.columns))
+                
+        with kpi3:
+            hosp_col = [c for c in df.columns if 'Hospital_Network' in c]
+            if hosp_col:
+                unique_hosp = df[hosp_col[0]].nunique()
+                st.metric("Partners", unique_hosp)
+            else:
+                st.metric("File Size", f"{uploaded_file.size/1024:.1f} KB")
+
+        with kpi4:
+            score_col = [c for c in df.columns if 'Score' in c]
+            if score_col:
+                avg_score = df[score_col[0]].mean()
+                st.metric("Avg Score", f"{avg_score:.2f}/5")
+            else:
+                st.metric("Status", "Active")
+
+        with st.expander("Explore Raw Dataset Infrastructure", expanded=False):
+            st.dataframe(df.head(10))
     else:
         st.error("Error connecting to the dataset.")
 

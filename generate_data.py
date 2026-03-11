@@ -3,7 +3,7 @@ import numpy as np
 from datetime import datetime, timedelta
 import random
 
-def generate_pharma_data(num_rows=2000):
+def generate_pharma_data(num_rows=2500):
     regions = ['North', 'South', 'East', 'West', 'Midwest']
     seasons = ['Spring', 'Summer', 'Autumn', 'Winter']
     
@@ -30,10 +30,10 @@ def generate_pharma_data(num_rows=2000):
     reps = ['Michael S.', 'Sarah M.', 'David L.', 'Emma B.', 'James T.', 'Olivia K.', 'William R.']
     
     data = []
-    start_date = datetime(2023, 1, 1)
+    start_date = datetime(2022, 1, 1) # 3 years of data
     
     for _ in range(num_rows):
-        days_offset = random.randint(0, 365 * 2) # 2 years of data
+        days_offset = random.randint(0, 365 * 3) 
         date = start_date + timedelta(days=days_offset)
         
         region = random.choice(regions)
@@ -63,8 +63,13 @@ def generate_pharma_data(num_rows=2000):
             units_sold = int(units_sold * 1.3)
             
         gross_revenue = base_price * units_sold
-        discount_perc = random.uniform(0, 0.25)
+        discount_perc = random.uniform(0.05, 0.25)
         net_revenue = gross_revenue * (1 - discount_perc)
+        
+        # NEW STRATEGIC COLUMNS
+        operating_cost = net_revenue * random.uniform(0.4, 0.7)
+        net_profit = net_revenue - operating_cost
+        profit_margin = (net_profit / net_revenue) if net_revenue > 0 else 0
         
         data.append({
             'Transaction_ID': f"TXN_{random.randint(100000, 999999)}",
@@ -81,14 +86,18 @@ def generate_pharma_data(num_rows=2000):
             'Discount_Applied_Perc': round(discount_perc * 100, 1),
             'Gross_Revenue_USD': round(gross_revenue, 2),
             'Net_Revenue_USD': round(net_revenue, 2),
-            'Insurance_Coverage_Perc': random.choice([0, 50, 80, 100]),
-            'Patient_Feedback_Score': round(random.uniform(2.5, 5.0), 1)
+            'Net_Profit_USD': round(net_profit, 2),
+            'Profit_Margin_Perc': round(profit_margin * 100, 1),
+            'Order_Priority': random.choice(['Critical', 'High', 'Medium', 'Low']),
+            'Insurance_Coverage_Perc': random.choice([50, 80, 100]),
+            'Approval_Status': random.choice(['Approved', 'Pending Review', 'Internal Audit']),
+            'Patient_Feedback_Score': round(random.uniform(3.5, 5.0), 1)
         })
         
     df = pd.DataFrame(data)
     df = df.sort_values(by='Date')
     df.to_csv('/Users/varunsaini/Desktop/RabbittAI_Varun/talking-rabbitt-mvp/sample_data/pharma_sales_data.csv', index=False)
-    print("Generated pharma_sales_data.csv with 16 columns using real-world entity names!")
+    print(f"Generated pharma_sales_data.csv with {len(df.columns)} columns and {len(df)} rows!")
 
 if __name__ == "__main__":
     generate_pharma_data()
