@@ -11,21 +11,30 @@ import streamlit as st
 
 load_dotenv()
 
-# Get API Key from Streamlit Secrets or Environment Variable
-api_key = os.getenv("OPENAI_API_KEY")
-if "OPENAI_API_KEY" in st.secrets:
-    api_key = st.secrets["OPENAI_API_KEY"]
+def get_client():
+    """Retrieves the OpenAI client using secrets or env vars."""
+    api_key = os.getenv("OPENAI_API_KEY")
+    
+    # Check Streamlit secrets
+    try:
+        if "OPENAI_API_KEY" in st.secrets:
+            api_key = st.secrets["OPENAI_API_KEY"]
+    except Exception:
+        pass # st.secrets might not be available in all contexts
 
-if not api_key:
-    # If no key is found, don't initialize yet, handle it in the function
-    client = None
-else:
-    client = OpenAI(api_key=api_key)
+    if not api_key:
+        return None
+        
+    try:
+        return OpenAI(api_key=str(api_key)) # Ensure it's a string
+    except Exception:
+        return None
 
 def generate_python_code(question, df_summary):
     """Uses LLM to write Python code based on the user's question and dataframe schema."""
+    client = get_client()
     if client is None:
-        return "Error: OpenAI API Key not found. Please check your Streamlit Secrets."
+        return "Error: OpenAI API Key not found or invalid. Please check your Streamlit Secrets."
     
     system_prompt = f"""You are a senior data analyst and Python expert working on "Talking Rabbitt", an executive intelligence layer.
 Your job is to answer the user's question by writing Python code using pandas and, if appropriate, plotly.
