@@ -28,6 +28,10 @@ st.markdown("""
         font-weight: 800;
         color: #ffffff; /* Fallback white */
     }
+    /* Hide the technical anchor link icons */
+    .stApp a.header-anchor {
+        display: none !important;
+    }
     .executive-card {
         padding: 20px;
         border-radius: 15px;
