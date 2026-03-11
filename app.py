@@ -26,9 +26,7 @@ st.markdown("""
     h1 {
         font-family: 'Inter', sans-serif;
         font-weight: 800;
-        background: linear-gradient(90deg, #fff, #94a3b8);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        color: #ffffff; /* Fallback white */
     }
     .executive-card {
         padding: 20px;
@@ -41,12 +39,8 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # Header
-col_header1, col_header2 = st.columns([0.1, 0.9])
-with col_header1:
-    st.write("# 🐇")
-with col_header2:
-    st.title("Talking Rabbitt")
-    st.markdown("### **The Executive Intelligence Layer**")
+st.title("Talking Rabbitt")
+st.markdown("### **The Executive Intelligence Layer**")
 
 st.markdown("---")
 
