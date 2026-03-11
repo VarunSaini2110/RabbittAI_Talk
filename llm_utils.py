@@ -6,41 +6,48 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import matplotlib.pyplot as plt
+import google.generativeai as genai
 
 import streamlit as st
 
 load_dotenv()
 
-def get_client():
-    """Retrieves the OpenAI client using secrets or env vars."""
+def get_gemini_client():
+    """Retrieves the Gemini API Key and configures the library."""
+    api_key = os.getenv("GEMINI_API_KEY")
+    try:
+        if hasattr(st, "secrets"):
+            if "GEMINI_API_KEY" in st.secrets:
+                api_key = st.secrets["GEMINI_API_KEY"]
+            elif "gemini_api_key" in st.secrets:
+                api_key = st.secrets["gemini_api_key"]
+    except Exception:
+        pass
+
+    if api_key:
+        api_key = str(api_key).strip().strip('"').strip("'")
+        genai.configure(api_key=api_key)
+        return True
+    return False
+
+def get_openai_client():
+    """Retrieves the OpenAI client if a key is available."""
     api_key = os.getenv("OPENAI_API_KEY")
-    
-    # Check Streamlit secrets with multiple fallback patterns
     try:
         if hasattr(st, "secrets"):
             if "OPENAI_API_KEY" in st.secrets:
                 api_key = st.secrets["OPENAI_API_KEY"]
-            elif "openai_api_key" in st.secrets:
-                api_key = st.secrets["openai_api_key"]
-    except Exception as e:
+    except Exception:
         pass
 
-    if not api_key:
-        return None, "No API key found in Environment or Secrets."
-        
-    # Clean up key if it was pasted with surrounding quotes
-    api_key_str = str(api_key).strip().strip('"').strip("'")
-    
-    if not api_key_str:
-        return None, "API key is an empty string."
-
-    if not api_key_str.startswith("sk-"):
-        return None, f"Invalid key format. Starts with '{api_key_str[:5]}...' instead of 'sk-'. Length: {len(api_key_str)}"
-
-    try:
-        return OpenAI(api_key=api_key_str), "Success"
-    except Exception as e:
-        return None, f"OpenAI Initialization Error: {str(e)}"
+    if api_key:
+        api_key_str = str(api_key).strip().strip('"').strip("'")
+        if api_key_str.startswith("sk-"):
+            try:
+                return OpenAI(api_key=api_key_str)
+            except Exception:
+                return None
+    return None
 
 def handle_demo_query(question):
     """Provides hardcoded responses for common demo questions to avoid API costs."""
@@ -88,21 +95,12 @@ def generate_python_code(question, df_summary):
     if demo_response:
         return demo_response
 
-    client, debug_msg = get_client()
-    if client is None:
-        has_secrets = hasattr(st, "secrets")
-        secrets_keys = list(st.secrets.keys()) if has_secrets else "N/A"
-        return f"Error: {debug_msg} \nDebug: st.secrets exists: {has_secrets}, Keys found: {secrets_keys}"
-    
     system_prompt = f"""You are a senior data analyst and Python expert working on "Talking Rabbitt", an executive intelligence layer.
 Your job is to answer the user's question by writing Python code using pandas and, if appropriate, plotly.
 
 A user uploaded a dataset with these characteristics:
 Columns: {df_summary['columns']}
 Info: {df_summary['info']}
-
-Here are the first few rows:
-{df_summary['sample']}
 
 The user asked: "{question}"
 
@@ -114,22 +112,33 @@ Instructions:
 5. DO NOT print anything. Just define `answer_text` and optionally `fig`.
 6. Return ONLY the valid, executable Python code inside a markdown code block (```python ... ```). Do not include any other conversational text or explanations.
 """
-    
-    try:
-        response = client.chat.completions.create(
-            model="gpt-4o", # gpt-4o is faster and more widely available than preview models
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": question}
-            ],
-            temperature=0.1
-        )
-        
-        reply = response.choices[0].message.content
-        return reply
 
-    except Exception as e:
-        return f"Error contacting LLM: {str(e)}"
+    # Check for Gemini first (Free Tier)
+    if get_gemini_client():
+        try:
+            model = genai.GenerativeModel('gemini-1.5-pro')
+            response = model.generate_content(system_prompt + "\n\nUser Question: " + question)
+            return response.text
+        except Exception as e:
+            return f"Gemini Error: {str(e)}"
+
+    # Fallback to OpenAI
+    openai_client = get_openai_client()
+    if openai_client:
+        try:
+            response = openai_client.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": question}
+                ],
+                temperature=0.1
+            )
+            return response.choices[0].message.content
+        except Exception as e:
+            return f"OpenAI Error: {str(e)}"
+
+    return "Error: No API key found. Please provide GEMINI_API_KEY in Streamlit Secrets for the free version."
 
 def extract_code(llm_response):
     """Extracts python code from markdown block."""
