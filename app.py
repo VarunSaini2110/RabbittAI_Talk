@@ -60,7 +60,7 @@ if 'history' not in st.session_state:
 
 # Sidebar Branding
 with st.sidebar:
-    st.image("https://img.icons8.com/isometric/512/rabbit.png", width=100)
+    st.image("assets/logo.png", width=150)
     st.title("Rabbitt AI")
     st.info("Conversational Data Intelligence for High-Growth Enterprises.")
     st.divider()
